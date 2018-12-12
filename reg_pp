@@ -1,0 +1,60 @@
+#!/bin/csh
+
+set log_dir = $argv[1]
+
+if ( ! -d $log_dir ) then
+    echo "directory $log_dir does not exist"
+    exit
+endif
+
+@ TEST_RUN_FAILED = 0 # - 4
+@ TEST_STILL_RUNS = 0 # - 3
+@ COMPILE_FAILED  = 0 # - 2
+@ STILL_COMPILING = 0 # - 1
+@ TEST_RUN_PASSED = 0 # - 0
+
+# clean failed log
+set reg_name = `readlink -f $log_dir | cut -d '/' -f7` 
+rm $WAREA/${reg_name}_failed.log -f
+
+foreach log_file (`\ls ${log_dir}`)
+
+    set log_file = "$log_dir$log_file"
+
+    if ( -d $log_file ) then
+
+            $TOP_VERIF/scripts/log_pp.csh ${log_file}/logs xx
+           
+            switch ("$status")
+
+               case [0] :   
+                            @ TEST_RUN_PASSED ++
+                            breaksw
+               case [1] :   
+                            @ STILL_COMPILING ++
+                            breaksw
+               case [2] :   
+                            @ COMPILE_FAILED ++
+                            breaksw
+               case [3] :   
+                            @ TEST_STILL_RUNS ++
+                            breaksw
+               case [4] :   
+                            @ TEST_RUN_FAILED ++
+                            breaksw
+           endsw
+
+    endif
+
+end
+
+echo
+echo "STILL_COMPILING   $STILL_COMPILING"
+echo "COMPILE_FAILED    $COMPILE_FAILED "
+echo "TEST_STILL_RUNS   $TEST_STILL_RUNS"
+echo "TEST_RUN_FAILED   $TEST_RUN_FAILED"
+echo "TEST_RUN_PASSED   $TEST_RUN_PASSED"
+echo ""
+echo "   failed log at:"
+echo "             gvim $WAREA/${reg_name}_failed.log"
+echo ""
