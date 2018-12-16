@@ -1,0 +1,28 @@
+//tcsh
+
+
+# complete runt flags
+set show_runt_flags = `grep case $DV_SCRIPTS/runt.csh | grep : | sed 's/case//' | tr -d '"' | cut -d':' -f1`
+
+# complete test names
+set list_all_tests = `find $DV/prtn_uvc/tb/tests/ -type f -printf '%f\n'`
+
+# complete setup names
+set list_all_setups = `ls $PRTN_REV/exemplars/designSetups/`
+
+
+complete runt     'n/-t/$list_all_tests/' \
+                  'n/-test/$list_all_tests/' \
+                  'n/-setup_name/$list_all_setups/' \
+                  'p/*/$show_runt_flags/'
+
+
+
+
+## complete for runreg command 
+
+# list all regressions
+set list_all_regressions = `find $DV/prtn_uvc/regressions/ -type f -printf '%f\n'`
+
+complete runr      'p/1/$list_all_regressions/' \
+                   'p/2/$list_all_setups/'
